@@ -1,28 +1,19 @@
-#this should be the main code for running the software.
-# I want it to communicate with the steam api.
+import time
 import requests
 
-app_id = 620 #portal 2 app id
-
 url = "https://store.steampowered.com/api/appdetails"
-params = {"appids": app_id, "cc": "us", "filters": "price_overview"}
-response = requests.get(url, params=params)
-data = response.json()
 
+games = {620: "Portal 2", 105600: "Terraria", 730: "Counter-Strike 2"}
 
-price_info = data[str(app_id)]["data"]["price_overview"]
+for app_id, name in games.items():
+    params = {"appids": app_id, "cc": "us", "filters": "price_overview"}
+    data = requests.get(url, params=params).json()
 
-print("Price: ", price_info["final_formatted"])
-print("Discount: ", price_info["discount_percent"], "%")
+    game = data[str(app_id)]
+    if game["success"] and game["data"]:
+        price_info = game["data"]["price_overview"]
+        print(name, "-", price_info["final_formatted"], f"({price_info['discount_percent']}% off)")
+    else:
+        print(name, "- no price (free?)")
 
-target_price = 5.00 #price u want in dollars
-current_price = price_info["final"]/100
-
-if current_price <= target_price:
-    print("Deal!")
-else:
-    print("Wait for a better deal!")
-
-
-
-
+    time.sleep(1)  # to slow down reqs so Steam doesn't block us
